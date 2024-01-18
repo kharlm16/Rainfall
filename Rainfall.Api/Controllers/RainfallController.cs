@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Rainfall.Api.Models.Response;
+using Rainfall.Api.Services;
 
 namespace Rainfall.Api.Controllers
 {
@@ -11,7 +12,8 @@ namespace Rainfall.Api.Controllers
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="stationId"></param>
+        /// <param name="stationId">The id of the reading station</param>
+        /// <param name="count"></param>
         /// <returns></returns>
         /// <response code="200">A list of rainfall readings successfully retrieved</response>
         /// <response code="400">Invalid request</response>
@@ -24,11 +26,13 @@ namespace Rainfall.Api.Controllers
         [ProducesResponseType(typeof(Error), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(Error), StatusCodes.Status500InternalServerError)]
         [Produces("application/json")]
-        public IActionResult GetReadingByStationId(string stationId)
+        public async Task<IActionResult> GetReadingByStationId(string stationId, int count = 10)
         {
+            RainfallPublicService rainfallService = new RainfallPublicService();
 
+            var result = await rainfallService.GetReadingsByStation(stationId, count);
 
-            return Ok(new RainfallReadingResponse());
+            return Ok(result);
         }
     }
 }
