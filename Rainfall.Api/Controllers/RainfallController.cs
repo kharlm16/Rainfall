@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Rainfall.Api.Models.Response;
 using Rainfall.Api.Services;
+using System.Net;
 
 namespace Rainfall.Api.Controllers
 {
@@ -28,11 +29,60 @@ namespace Rainfall.Api.Controllers
         [Produces("application/json")]
         public async Task<IActionResult> GetReadingByStationId(string stationId, int count = 10)
         {
+            Error paramError = new Error
+            {
+                Detail = new List<ErrorDetail>()
+            };
+            if (stationId == null)
+            {
+                paramError.Detail.Add(new ErrorDetail
+                {
+                    PropertyName = "stationId",
+                    Message = "Station ID is required."
+                });
+            }
+
+            if (count < 1 || count > 100)
+            {
+                paramError.Detail.Add(new ErrorDetail
+                {
+                    PropertyName = "count",
+                    Message = "The parameter 'count' must have a minimum value of 1 and a maximum of 100."
+                });
+            }
+
+            if (paramError.Detail.Count > 0)
+            {
+                return BadRequest(paramError);
+            }
+
             RainfallPublicService rainfallService = new RainfallPublicService();
 
-            var result = await rainfallService.GetReadingsByStation(stationId, count);
+            try
+            {
+                var result = await rainfallService.GetReadingsByStation(stationId, count);
 
-            return Ok(result);
+                if (result.Readings.Count == 0)
+                {
+                    Error error = new Error
+                    {
+                        Message = "No readings found for the specified station id."
+                    };
+
+                    return NotFound(error);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Error error = new Error
+                {
+                    Message = ex.Message
+                };
+
+                return StatusCode(500, error);
+            }
         }
     }
 }

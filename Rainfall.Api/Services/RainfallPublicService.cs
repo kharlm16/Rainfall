@@ -17,7 +17,7 @@ namespace Rainfall.Api.Services
                 );
 
             RainfallPublicReading responseContent = null;
-            HttpResponseMessage response = await client.GetAsync($"id/stations/{stationId}/readings?_sorted&_limit=10");
+            HttpResponseMessage response = await client.GetAsync($"id/stations/{stationId}/readings?_sorted&_limit={limit}");
             if (response.IsSuccessStatusCode)
             {
                 responseContent = await response.Content.ReadAsAsync<RainfallPublicReading>();
